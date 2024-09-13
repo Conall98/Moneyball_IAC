@@ -128,21 +128,54 @@ class MA():
         
         return int(mt_imLEO_result)
 
-#%% test case one way lunar mission 
+#%%
+def AMCM(MA):
+    a = MA.md_mission_calc()
+    # print(a)
+    
+    #AMCM coefficients
+    A = 5.65*10e-4
+    B = 0.5941
+    C = 0.6604
+    D = 80.599
+    E = 3.8085*10e-55
+    F = -0.3553
+    G = 1.5691
+    #specification value for AMCM
+    S = 2.39  #planetary
+    
+    Q = 1 #quantity 
+    M = a*2.2 #dry mass in pounds
+    IOC = 2024 #initial year of operation
+    Bl = 1 #iteration of the design
+    Di = 1 # difficulty -2.5, 2.5, 0.5
+    
+    
+    C = A*(Q**B)*(M**C)*(D**S)*(E**(1/(IOC-1900)))*(Bl**F)*(G**Di)
+    
+    return int(C)
+    
+#%%
+def Launchcosts(MA):
 
+    c = MA.mt_imLEO_calc()
+    
+    #should have a launcher in the MA
+    SLC = 5000 #specific launch cost
+    return SLC*c/1000000
+
+#%%
 mpl  = 2000 #kg of payload to be delivered
 dvt = 5800 #total dv of the mission
 destination_type = "orbit"
 data = 1e12 # quantity of data to be returned
 
+
 ME2_test = ME(name="lander1", mp=mpl, dv=2000, Isp=350, vehicle_type="lander")
 mpTV = ME2_test.mtotal_calc()
-ME1_test = ME(name="TV1", mp=mpTV, dv=3800, Isp=350, vehicle_type="TV", vehicle_ref = TV_Cent)
-
+ME1_test = ME(name="TV1", mp=mpTV, dv=3800, Isp=350, vehicle_type="TV", vehicle_ref = SM.TV_Cent)
 Ma_test = MA(mpl=ME2_test.mp, dv=dvt, destination="surface", data=1e12, ME1=ME1_test, ME2=ME2_test)
 
-
-#%% Intermediate evaluation criteria
 a = Ma_test.md_mission_calc()
 b = Ma_test.mprop_mission_calc()
 c = Ma_test.mt_imLEO_calc()
@@ -153,4 +186,22 @@ interesults = {"Total Mission Dry Mass": a,
 
 interesults 
 
+
+#%% Cost
+#ddte and launch costs
+ddte = SM.AMCM(Ma_test)
+launch = SM.Launchcosts(Ma_test)
+Aq_cost = ddte + launch
+Aq_cost #in millions
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
