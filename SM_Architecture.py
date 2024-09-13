@@ -130,27 +130,27 @@ class MA():
 
 #%% test case one way lunar mission 
 
-# mpl  = 2000 #kg of payload to be delivered
-# dvt = 5800 #total dv of the mission
-# destination_type = "orbit"
-# data = 1e12 # quantity of data to be returned
+mpl  = 2000 #kg of payload to be delivered
+dvt = 5800 #total dv of the mission
+destination_type = "orbit"
+data = 1e12 # quantity of data to be returned
 
-# ME2_test = ME(name="lander1", mp=mpl, dv=2000, Isp=350, vehicle_type="lander")
-# mpTV = ME2_test.mtotal_calc()
-# ME1_test = ME(name="TV1", mp=mpTV, dv=3800, Isp=350, vehicle_type="TV", vehicle_ref = TV_Cent)
+ME2_test = ME(name="lander1", mp=mpl, dv=2000, Isp=350, vehicle_type="lander")
+mpTV = ME2_test.mtotal_calc()
+ME1_test = ME(name="TV1", mp=mpTV, dv=3800, Isp=350, vehicle_type="TV", vehicle_ref = TV_Cent)
 
-# Ma_test = MA(mpl=ME2_test.mp, dv=dvt, destination="surface", data=1e12, ME1=ME1_test, ME2=ME2_test)
+Ma_test = MA(mpl=ME2_test.mp, dv=dvt, destination="surface", data=1e12, ME1=ME1_test, ME2=ME2_test)
 
 
-# #%% Intermediate evaluation criteria
-# a = Ma_test.md_mission_calc()
-# b = Ma_test.mprop_mission_calc()
-# c = Ma_test.mt_imLEO_calc()
+#%% Intermediate evaluation criteria
+a = Ma_test.md_mission_calc()
+b = Ma_test.mprop_mission_calc()
+c = Ma_test.mt_imLEO_calc()
 
-# interesults = {"Total Mission Dry Mass": a,
-#                "Total mission propellant mass": b,
-#                "total initial mass to LEO": c }
+interesults = {"Total Mission Dry Mass": a,
+                "Total mission propellant mass": b,
+                "total initial mass to LEO": c }
 
-# interesults 
+interesults 
 
 
