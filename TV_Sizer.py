@@ -21,9 +21,12 @@ class TV_arch:
         self.m_prop = m_prop
         
 class Launcher:
-    def __init__(self, mp_LEO, ref):
+    def __init__(self, mp_LEO, cost, ref):
         self.mp = mp_LEO
+        self.cost = cost
         self.ref = ref
+    def slc(self):
+        return self.cost/self.mp
         
 #%%
 def TV_chooser(mp, dv):

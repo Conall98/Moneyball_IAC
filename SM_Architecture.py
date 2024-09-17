@@ -17,14 +17,20 @@ LM = L.lander_arch(903, 1450, 1.6, 311, 31, 0, "LM") # Lunar module equivalent
 L_Hy = L.lander_arch(70.9, 1141, 6, 450, 50, 0, "LOX/LH2") # LOX/LH2 lander, TW from scaled RL-10C
 L_Me = L.lander_arch(422.4, 1141, 3.5, 350, 140, 0, "LOX/CH4") #LOX/LCH4 ladnder, TW from Raptor 2
 
+Lrefs = [LM, L_Hy, L_Me]
+
 #TV_arch = TV.arch(ek, Isp, md, m_prop, ref)
 TV_Cent = T.TV_arch(9.7e+10, 451, 2462, 20830, "Centaur")
 TV_Aria = T.TV_arch(6.62e+10, 446, 4540, 14700, "Ariane 5 2S")
 TV_Falc = T.TV_arch(3.48e+11, 348, 3900, 92670, "Falcon 9 2S")
 TV_DCSS = T.TV_arch(1.36e+11, 462, 3490, 27200, "DCSS")
 
-FH = T.Launcher(63800, "Falcon Heavy") #payload to leo, name
-SLS = T.Launcher(95000, "Space Launch System") #payload to leo, name
+TVrefs = [TV_Cent, TV_Aria, TV_Falc, TV_DCSS]
+
+FH = T.Launcher(63800, 97, "Falcon Heavy") #payload to leo, name
+SLS = T.Launcher(95000, 2500, "Space Launch System") #payload to leo, name
+
+Lchrefs = [FH, SLS]
 
 #%% 
 class wspace():
@@ -37,11 +43,11 @@ class wspace():
 #%%
 
 class ME(): #spacecrafts
-    def __init__(self, name, mp, dv, Isp, power=None, comms=None, aut=None, vehicle_type=None, vehicle_ref = None):
+    def __init__(self, name, mp, dv, power=None, comms=None, aut=None, vehicle_type=None, vehicle_ref = None):
         self.name = name
         self.mp = mp
         self.dv = dv
-        self.Isp = Isp
+        # self.Isp = Isp
         self.power = power
         self.comm = comms
         self.type = vehicle_type
@@ -64,10 +70,14 @@ class ME(): #spacecrafts
             raise ValueError("No vehicle_ref given for Mission element")
         
         return md
+    
+    # retrieving Isp from design reference
+    
 
     def mprop_calc(self):
         dry_mass = self.dry_mass_calc()
-        mprop = L.prop(self.mp, dry_mass, self.Isp, self.dv)
+        Isp = self.ref.Isp
+        mprop = L.prop(self.mp, dry_mass, Isp, self.dv)
         return mprop
     
     def mtotal_calc(self):
@@ -78,7 +88,7 @@ class ME(): #spacecrafts
     
 #%% System of systems
 class MA():
-    def __init__(self, mpl, dv, destination, data, ME1, ME2, traj=None, comms=None, aut=None, launcher=None, EOL=None, ME3=None, ME4=None):
+    def __init__(self, mpl, dv, destination, ME1, ME2, traj=None, comms=None, aut=None, launcher=None, EOL=None, ME3=None, ME4=None, data=None):
         self.mpl = mpl            # payload mass
         self.dv = dv            # mission delta-v 
         self.dest = destination # surface or orbit
@@ -159,40 +169,23 @@ def AMCM(MA):
 def Launchcosts(MA):
 
     c = MA.mt_imLEO_calc()
+    Launcher = MA.launcher
     
     #should have a launcher in the MA
-    SLC = 5000 #specific launch cost
-    return SLC*c/1000000
+    
+    SLC = Launcher.slc() #specific launch cost
+    print(SLC, c)
+    return SLC*c
 
 #%%
-mpl  = 2000 #kg of payload to be delivered
-dvt = 5800 #total dv of the mission
-destination_type = "orbit"
-data = 1e12 # quantity of data to be returned
-
-
-ME2_test = ME(name="lander1", mp=mpl, dv=2000, Isp=350, vehicle_type="lander")
-mpTV = ME2_test.mtotal_calc()
-ME1_test = ME(name="TV1", mp=mpTV, dv=3800, Isp=350, vehicle_type="TV", vehicle_ref = SM.TV_Cent)
-Ma_test = MA(mpl=ME2_test.mp, dv=dvt, destination="surface", data=1e12, ME1=ME1_test, ME2=ME2_test)
-
-a = Ma_test.md_mission_calc()
-b = Ma_test.mprop_mission_calc()
-c = Ma_test.mt_imLEO_calc()
-
-interesults = {"Total Mission Dry Mass": a,
-                "Total mission propellant mass": b,
-                "total initial mass to LEO": c }
-
-interesults 
 
 
 #%% Cost
 #ddte and launch costs
-ddte = SM.AMCM(Ma_test)
-launch = SM.Launchcosts(Ma_test)
-Aq_cost = ddte + launch
-Aq_cost #in millions
+# ddte = AMCM(Ma_test)
+# launch = Launchcosts(Ma_test)
+# Aq_cost = ddte + launch
+# Aq_cost #in millions
     
     
     
