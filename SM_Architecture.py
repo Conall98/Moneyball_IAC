@@ -137,8 +137,30 @@ class MA():
                 mt_imLEO_result = mt_imLEO_result + self.ME4.mtotal_calc()        
         
         return int(mt_imLEO_result)
+    
+
+
 
 #%%
+def link(d, R, Gt, Pt, f):
+    # gain of reciever --> dia of dish --> cost of ground station equipment + lease / building purcahse
+    EbNo = 12.6 #dB
+    Gt = 12 #dB
+    T = 135 #K
+   
+    lam = 299792458/f #in meters
+    
+    Ls = 20*np.log10(4*np.pi*d/lam)
+    
+    Pt = 10*np.log10(Pt)
+    Gr = EbNo - Pt + Ls - Gt - 228.6 + 10*np.log10(T) + 10*np.log10(R)
+    # print(Ls)
+    # print(10*np.log10(T))
+    D = (((10**(Gr/10))/(6))*lam**2)**0.5
+    
+    return D
+
+#%% AMCM
 def AMCM(MA):
     a = MA.md_mission_calc()
     # print(a)
@@ -158,14 +180,32 @@ def AMCM(MA):
     M = a*2.2 #dry mass in pounds
     IOC = 2024 #initial year of operation
     Bl = 1 #iteration of the design
-    Di = 1 # difficulty -2.5, 2.5, 0.5
+    Di = 0
     
     
-    C = A*(Q**B)*(M**C)*(D**S)*(E**(1/(IOC-1900)))*(Bl**F)*(G**Di)
+    AD_C = A*(Q**B)*(M**C)*(D**S)*(E**(1/(IOC-1900)))*(Bl**F)*(G**Di)
     
-    return int(C)
+    ### dedicated GroundSegment ###
+    d = 385000000 # should be a param of MA in the destination object
+    R = 10e6 # should be a param of MA in the data object
+    Gt = 12 #dB typical
+    Pt = 300 #W
+    f = 3e9 #s-band
     
-#%%
+    D = link(d, R, Gt, Pt, f)
+    GS_equip = 650*D + 350*20 + 1550 #SMAD pg 730 FY92in self 
+    GS_equip = GS_equip*1.84 # FY2020
+    GS_FAC = (18/81)*GS_equip # from table 20.3 in SMAD sized FAC from equip
+    
+    GS_C = GS_FAC + GS_equip
+    
+    ### wrap up ###
+    
+    C = AD_C+GS_C
+    
+    return int(C) #returns k$
+    
+#%% 
 def Launchcosts(MA):
 
     c = MA.mt_imLEO_calc()
@@ -174,7 +214,7 @@ def Launchcosts(MA):
     #should have a launcher in the MA
     
     SLC = Launcher.slc() #specific launch cost
-    print(SLC, c)
+    # print(SLC, c)
     return SLC*c
 
 #%%

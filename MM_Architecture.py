@@ -101,9 +101,8 @@ for reference_vehicle_2 in DRS1:
                         MAs.append(MA_star)
                         ddte = SM.AMCM(MA_star) #millions
                         launch = SM.Launchcosts(MA_star) #millions
-                        Aq = ddte + launch #millions 
-                        # print(launch)
-                        # np.append(costs, [[ddte, launch, Aq_cost]], axis = 0)
+                        Aq = ddte + launch #millions
+                        
                         ddte_costs.append(ddte)
                         Launch_costs.append(launch)
                         Aq_costs.append(Aq)
@@ -111,30 +110,36 @@ for reference_vehicle_2 in DRS1:
                         total_masses.append(MA_star.mt_imLEO_calc())
                         counter += 1
     
-    
+### Cost Normalisation ###
 
 
 
 #%%
-plt.figure()
-x = range(0, counter)
-plt.plot(x, Launch_costs)
-plt.title("launch cost")
+# plt.figure()
+# x = range(0, counter)
+# plt.plot(x, Launch_costs)
+# plt.xlabel("solutions")
+# plt.ylabel("Launch cost [$ FY20]")
+# plt.title("launch cost")
 
 plt.figure()
 x = range(0, counter)
 plt.plot(x, Aq_costs)
+plt.xlabel("solutions")
+plt.ylabel("total cost [$ FY20]")
 plt.title("total cost")
 
 plt.figure()
 x = range(0, counter)
 plt.plot(x, total_masses)
-plt.title("total imLEO")
+plt.xlabel("solutions")
+plt.ylabel("imLEO")
+plt.title("Initial Mass to Low Earth Orbit")
 
 #%%
 plt.figure()
 x = range(0, counter)
-plt.hist(Aq_costs, bins = 10)
+plt.hist(Aq_costs, bins = 20)
 plt.xlabel("system aquisition cost (millions)")
 plt.ylabel("# solutions")
 plt.title("Space Missions Total Cost")
