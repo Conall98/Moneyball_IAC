@@ -74,7 +74,7 @@ EOL = [1, 2, 3] #1=leave in place, 2=passive 2nd mission, 3=active 2nd mission
 # launch = SM.Launchcosts(MA_star) #millions
 # Aq_cost = ddte + launch #millions
 
-#combination space
+#%% combination space
 
 MAs = []
 ddte_costs = []
@@ -142,6 +142,13 @@ x = range(0, counter)
 plt.hist(Aq_costs, bins = 20)
 plt.xlabel("system aquisition cost (millions)")
 plt.ylabel("# solutions")
+plt.title("Space Missions Total Cost")
+
+#%%
+plt.figure()
+plt.scatter(range(1, len(Aq_costs)+1), Aq_costs)
+plt.ylabel("system aquisition cost (millions)")
+plt.xlabel("solutions")
 plt.title("Space Missions Total Cost")
 
 #%% Intermediate evaluation criteria
