@@ -84,31 +84,40 @@ total_masses = []
 propellent_masses = []
 dry_masses = []
 counter = 0
-for reference_vehicle_2 in DRS1:
-    for reference_vehicle_1 in DRS2:
-        ME2 = SM.ME(name="lander1", mp=mp_test, dv=dvl_test,  vehicle_type="lander", vehicle_ref = reference_vehicle_2)
-        ME1 = SM.ME(name="TV1",     mp=ME2.mtotal_calc(),    dv=dvtv_test, vehicle_type="TV",     vehicle_ref = reference_vehicle_1)
-        print(counter)
-        for launcher_choice in LRS:
-            for trajectory_choice in RO: #meaningless right now
-                for communications_choice in COMM:
-                    for autonomy_choice in LOA:
-                    
-                        MA_star = SM.MA(mp_test, dvt_test, dest_test, ME1, ME2, 
-                                traj=RO[0], comms=communications_choice, 
-                                aut=autonomy_choice, launcher=launcher_choice, EOL=None, 
-                                ME3=None, ME4=None, data=None)
-                        MAs.append(MA_star)
-                        ddte = SM.AMCM(MA_star) #millions
-                        launch = SM.Launchcosts(MA_star) #millions
-                        Aq = ddte + launch #millions
-                        
-                        ddte_costs.append(ddte)
-                        Launch_costs.append(launch)
-                        Aq_costs.append(Aq)
-                        
-                        total_masses.append(MA_star.mt_imLEO_calc()/1000)
-                        counter += 1
+for k in range(0, 2):
+    for reference_vehicle_1 in DRS1:
+        for reference_vehicle_2 in DRS2:
+            ME1 = SM.ME(name="lander1", mp=mp_test, dv=dvl_test,  vehicle_type="lander", vehicle_ref = reference_vehicle_1)
+            ME2 = SM.ME(name="TV1",     mp=ME1.mtotal_calc(),    dv=dvtv_test, vehicle_type="TV",     vehicle_ref = reference_vehicle_2)
+            print(counter)
+            for launcher_choice in LRS:
+                if launcher_choice.mp > ME1.mtotal_calc():
+                    for trajectory_choice in RO: #meaningless right now
+                        for communications_choice in COMM:
+                            for autonomy_choice in LOA:
+                                if k == 0:
+                                    MA_star = SM.MA(mp_test, dvt_test, dest_test, ME1, 
+                                            traj=RO[0], comms=communications_choice, 
+                                            aut=autonomy_choice, launcher=launcher_choice, EOL=None, 
+                                            ME3=None, ME4=None, data=None)
+                                elif k == 1:
+                                    MA_star = SM.MA(mp_test, dvt_test, dest_test, ME1, ME2,
+                                            traj=RO[0], comms=communications_choice, 
+                                            aut=autonomy_choice, launcher=launcher_choice, EOL=None, 
+                                            ME3=None, ME4=None, data=None)
+                                MAs.append(MA_star)
+                                # ddte = SM.AMCM(MA_star) #millions
+                                ddte = SM.TP(MA_star)
+                                launch = SM.Launchcosts(MA_star) #millions
+                                Aq = ddte + launch #millions
+                                
+                                ddte_costs.append(ddte)
+                                Launch_costs.append(launch)
+                                Aq_costs.append(Aq)
+                                
+                                total_masses.append(MA_star.mt_imLEO_calc()/1000)
+                                counter += 1
+
     
 ### Cost Normalisation ###
 
@@ -158,15 +167,16 @@ def MA_dict(MA, i):
     A = {"Solution number  ": i,
          "Mission element 1": MA.ME1.ref.ref,
          "ME1.md           ": MA.ME1.dry_mass_calc(),
-         "Mission element 2": MA.ME2.ref.ref, 
-         "ME2.md           ": MA.ME2.dry_mass_calc(),
+         # "Mission element 2": MA.ME2.ref.ref, 
+         # "ME2.md           ": MA.ME2.dry_mass_calc(),
          "imLEO            ": MA.mt_imLEO_calc(),
          "md_mission       ": MA.md_mission_calc(),
+         "launcher         ": MA.launcher.ref,
          "Acq_cost         ": int(Aq_costs[i])}
     return A
 
 #%% individual MA inspection
-i = 152
+i = 4250
 MA_dict(MAs[i], i)
 
 
