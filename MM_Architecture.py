@@ -107,7 +107,7 @@ for reference_vehicle_2 in DRS1:
                         Launch_costs.append(launch)
                         Aq_costs.append(Aq)
                         
-                        total_masses.append(MA_star.mt_imLEO_calc())
+                        total_masses.append(MA_star.mt_imLEO_calc()/1000)
                         counter += 1
     
 ### Cost Normalisation ###
@@ -122,34 +122,53 @@ for reference_vehicle_2 in DRS1:
 # plt.ylabel("Launch cost [$ FY20]")
 # plt.title("launch cost")
 
+csfont = {"fontname":"CMU Serif"}
+
 plt.figure()
 x = range(0, counter)
 plt.plot(x, Aq_costs)
-plt.xlabel("solutions")
-plt.ylabel("total cost [$ FY20]")
-plt.title("total cost")
+plt.xlabel("Solutions", **csfont, fontsize=16)
+plt.ylabel("Mission Aquisition Cost [M$ FY20]", **csfont, fontsize=16)
+plt.title("Mission Acquisition Cost", **csfont, fontsize=20)
 
 plt.figure()
 x = range(0, counter)
 plt.plot(x, total_masses)
-plt.xlabel("solutions")
-plt.ylabel("imLEO")
-plt.title("Initial Mass to Low Earth Orbit")
+plt.xlabel("Solutions", **csfont, fontsize=16)
+plt.ylabel("imLEO [t]", **csfont, fontsize=16)
+plt.title("Initial Mass to Low Earth Orbit", **csfont, fontsize=20)
 
 #%%
 plt.figure()
 x = range(0, counter)
 plt.hist(Aq_costs, bins = 20)
-plt.xlabel("system aquisition cost (millions)")
-plt.ylabel("# solutions")
-plt.title("Space Missions Total Cost")
+plt.xlabel("Mission Aquisition Cost [M$ FY20]", **csfont, fontsize=16)
+plt.ylabel("# solutions", **csfont, fontsize=16)
+plt.title("Mission Architecture Groupings", **csfont, fontsize=16)
 
 #%%
 plt.figure()
 plt.scatter(range(1, len(Aq_costs)+1), Aq_costs)
-plt.ylabel("system aquisition cost (millions)")
-plt.xlabel("solutions")
-plt.title("Space Missions Total Cost")
+plt.ylabel("system aquisition cost [M$ FY20]", **csfont, fontsize=16)
+plt.xlabel("solutions", **csfont, fontsize=16)
+plt.title("Space Missions Total Cost", **csfont, fontsize=20)
+
+#%%
+def MA_dict(MA, i):
+    A = {"Solution number  ": i,
+         "Mission element 1": MA.ME1.ref.ref,
+         "ME1.md           ": MA.ME1.dry_mass_calc(),
+         "Mission element 2": MA.ME2.ref.ref, 
+         "ME2.md           ": MA.ME2.dry_mass_calc(),
+         "imLEO            ": MA.mt_imLEO_calc(),
+         "md_mission       ": MA.md_mission_calc(),
+         "Acq_cost         ": int(Aq_costs[i])}
+    return A
+
+#%% individual MA inspection
+i = 152
+MA_dict(MAs[i], i)
+
 
 #%% Intermediate evaluation criteria
 # a = Ma_test.md_mission_calc()
@@ -169,3 +188,18 @@ plt.title("Space Missions Total Cost")
 # launch = SM.Launchcosts(Ma_test)
 # Aq_cost = ddte + launch
 # Aq_cost #in millions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

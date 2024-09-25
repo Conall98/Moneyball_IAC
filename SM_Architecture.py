@@ -28,10 +28,28 @@ TV_DCSS = T.TV_arch(1.36e+11, 462, 3490, 27200, "DCSS")
 TVrefs = [TV_Cent, TV_Aria, TV_Falc, TV_DCSS]
 
 FH = T.Launcher(63800, 97, "Falcon Heavy") #payload to leo, name
-SLS = T.Launcher(95000, 2500, "Space Launch System") #payload to leo, name
+SLS = T.Launcher(95000, 2500, "Space Launch System")
+#Vega C
+Vega = T.Launcher(2500, 37, "Vega") #payload to leo, name
+#Ariane 6
+Ariane62 = T.Launcher(10350, 70, "Ariane A62")
+Ariane64 = T.Launcher(21650, 115, "Ariane A64")
+#Falcon 9
+Falcon9 = T.Launcher(22800, 70, "Falcon 9")
+#Electron
+Electron = T.Launcher(320, 7.5, "Electron")
+#Atlas V 551
+AltasV = T.Launcher(18850, 153, "AtlasV")
+#firefly alpha
+Firefly = T.Launcher(1030, 17.6, "Firefly")
+#Vulcan
+Vulcan = T.Launcher(21650, 150, "Vulcan")
+#angara
+Angara = T.Launcher(24500, 100, "Angara")
+#soyuz 2
+Soyuz = T.Launcher(8200, 80, "Soyuz 2b")
 
-Lchrefs = [FH, SLS]
-
+Lchrefs = [FH, SLS, Vega, Ariane62, Ariane64, Falcon9, Electron, AltasV, Firefly, Vulcan, Angara, Soyuz]
 #%% 
 class wspace():
     def __init__(self, mp, destination, data, mission_life):
@@ -56,18 +74,18 @@ class ME(): #spacecrafts
     # method to compute the dry mass of the mission element
     def dry_mass_calc(self): 
         if self.type == "lander": #for landers
-            md = L.p2d(self.mp)
+            md = L.Lander_sizer(self.mp, self.dv, self.ref).md
             
-        elif self.ref is not None: #for transfer vehicles
-            if self.type == "TV":
-                md = self.ref.md #use ref for simplicity
+
+        elif self.type == "TV":#for transfer vehicles
+            md = self.ref.md #use ref for simplicity
             
-        elif self.ref is not None: #for orbiter type probes
-            if self.type == "orbiter":
-                md = self.ref.md #use ref for simplicity
+
+        elif self.type == "orbiter":
+            md = self.ref.md #use ref for simplicity
         
         else:
-            raise ValueError("No vehicle_ref given for Mission element")
+            raise ValueError("No vehicle_type given for Mission element")
         
         return md
     
@@ -179,7 +197,7 @@ def AMCM(MA):
     Q = 1 #quantity 
     M = a*2.2 #dry mass in pounds
     IOC = 2024 #initial year of operation
-    Bl = 1 #iteration of the design
+    Bl = 2 #iteration of the design
     Di = 0
     
     
@@ -215,7 +233,8 @@ def Launchcosts(MA):
     
     SLC = Launcher.slc() #specific launch cost
     # print(SLC, c)
-    return SLC*c
+    # return SLC*c
+    return Launcher.cost
 
 #%%
 
