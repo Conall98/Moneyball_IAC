@@ -100,14 +100,17 @@ for k in range(0, 2):
                                             traj=RO[0], comms=communications_choice, 
                                             aut=autonomy_choice, launcher=launcher_choice, EOL=None, 
                                             ME3=None, ME4=None, data=None)
+                                    ddte = SM.TP(MA_star)
                                 elif k == 1:
+                                    # print(ME2.ref.ref)
                                     MA_star = SM.MA(mp_test, dvt_test, dest_test, ME1, ME2,
                                             traj=RO[0], comms=communications_choice, 
                                             aut=autonomy_choice, launcher=launcher_choice, EOL=None, 
                                             ME3=None, ME4=None, data=None)
+                                    ddte = SM.TP2(MA_star)
                                 MAs.append(MA_star)
                                 # ddte = SM.AMCM(MA_star) #millions
-                                ddte = SM.TP(MA_star)
+                                
                                 launch = SM.Launchcosts(MA_star) #millions
                                 Aq = ddte + launch #millions
                                 
@@ -176,7 +179,7 @@ def MA_dict(MA, i):
     return A
 
 #%% individual MA inspection
-i = 4250
+i = 7078
 MA_dict(MAs[i], i)
 
 

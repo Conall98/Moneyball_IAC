@@ -265,8 +265,15 @@ def TP(MA):
     acq_cost = str_c + prpl_c + power_c + avio_c + therm_c + ADCS_c
     acq_cost = acq_cost/0.69 # the system integration factor present in TP
     
+    # ME2 estimation
+    
     return acq_cost
 
+#%%
+def TP2(MA):
+    a = MA.ME2.dry_mass_calc()
+    prpl_c = c.motor((a)*(77/313))+c.tanks((a)*(236/313))
+    return prpl_c
 # %%
 # i = 4250
 # # MA_dict(MAs[i], i)
