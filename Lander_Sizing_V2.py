@@ -366,7 +366,7 @@ def Lander_sizer(mp, dv, Lander_architecture):
     return lander(C["mp"], C["md"], C["mprop"], C["mt"], B)
 
 #%%
-# L_Hy = lander_arch(70.9, 1141, 6, 450, 50, 0)
+# L_Hy = lander_arch(70.9, 1141, 6, 450, 50, 0, "poo")
 # test = Lander_sizer(20000, 5000, L_Hy)
 
 

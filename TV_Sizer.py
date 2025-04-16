@@ -27,6 +27,8 @@ class Launcher:
         self.ref = ref
     def slc(self):
         return self.cost/self.mp
+    def Ekc(self):
+        return 0.5*self.mp_LEO*(8000**2)
         
 #%%
 def TV_chooser(mp, dv):

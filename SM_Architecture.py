@@ -10,6 +10,7 @@ Created on Thu Sep  5 13:35:01 2024
 import numpy as np
 import Lander_Sizing_V2 as L
 import TV_Sizer as T
+import cost_functions as c
 
 
 #%% reference vehicles
@@ -28,10 +29,28 @@ TV_DCSS = T.TV_arch(1.36e+11, 462, 3490, 27200, "DCSS")
 TVrefs = [TV_Cent, TV_Aria, TV_Falc, TV_DCSS]
 
 FH = T.Launcher(63800, 97, "Falcon Heavy") #payload to leo, name
-SLS = T.Launcher(95000, 2500, "Space Launch System") #payload to leo, name
+# SLS = T.Launcher(95000, 2500, "Space Launch System")
+#Vega C
+Vega = T.Launcher(2500, 37, "Vega") #payload to leo, name
+#Ariane 6
+Ariane62 = T.Launcher(10350, 70, "Ariane A62")
+Ariane64 = T.Launcher(21650, 115, "Ariane A64")
+#Falcon 9
+Falcon9 = T.Launcher(22800, 70, "Falcon 9")
+#Electron
+Electron = T.Launcher(320, 7.5, "Electron")
+#Atlas V 551
+AltasV = T.Launcher(18850, 153, "AtlasV")
+#firefly alpha
+Firefly = T.Launcher(1030, 17.6, "Firefly")
+#Vulcan
+Vulcan = T.Launcher(21650, 150, "Vulcan")
+#angara
+Angara = T.Launcher(24500, 100, "Angara")
+#soyuz 2
+Soyuz = T.Launcher(8200, 80, "Soyuz 2b")
 
-Lchrefs = [FH, SLS]
-
+Lchrefs = [FH, Vega, Ariane62, Ariane64, Falcon9, Electron, AltasV, Firefly, Vulcan, Angara, Soyuz]
 #%% 
 class wspace():
     def __init__(self, mp, destination, data, mission_life):
@@ -56,18 +75,19 @@ class ME(): #spacecrafts
     # method to compute the dry mass of the mission element
     def dry_mass_calc(self): 
         if self.type == "lander": #for landers
-            md = L.p2d(self.mp)
+            Lander_star = L.Lander_sizer(self.mp, self.dv, self.ref)
+            md = Lander_star.md
             
-        elif self.ref is not None: #for transfer vehicles
-            if self.type == "TV":
-                md = self.ref.md #use ref for simplicity
+
+        elif self.type == "TV":#for transfer vehicles
+            md = self.ref.md #use ref for simplicity
             
-        elif self.ref is not None: #for orbiter type probes
-            if self.type == "orbiter":
-                md = self.ref.md #use ref for simplicity
+
+        elif self.type == "orbiter":
+            md = self.ref.md #use ref for simplicity
         
         else:
-            raise ValueError("No vehicle_ref given for Mission element")
+            raise ValueError("No vehicle_type given for Mission element")
         
         return md
     
@@ -85,10 +105,13 @@ class ME(): #spacecrafts
         prop_mass = self.mprop_calc()
         return dry_mass+prop_mass+self.mp
     
+    def dmb(self):
+        Lander_star = L.Lander_sizer(self.mp, self.dv, self.ref)
+        return Lander_star.dry_mass_breakdown
     
 #%% System of systems
 class MA():
-    def __init__(self, mpl, dv, destination, ME1, ME2, traj=None, comms=None, aut=None, launcher=None, EOL=None, ME3=None, ME4=None, data=None):
+    def __init__(self, mpl, dv, destination, ME1, ME2=None, ME3=None, ME4=None, traj=None, comms=None, aut=None, launcher=None, EOL=None, data=None):
         self.mpl = mpl            # payload mass
         self.dv = dv            # mission delta-v 
         self.dest = destination # surface or orbit
@@ -105,36 +128,42 @@ class MA():
     
     def md_mission_calc(self):
         #assuming always having at least a TV and a probe or lander
-        md_mission_result = self.ME1.dry_mass_calc() + self.ME2.dry_mass_calc() 
+        md_mission_result = self.ME1.dry_mass_calc()
         #additional vehicles
-        if self.ME3 is not None:
-            md_mission_result = md_mission_result + self.ME3.dry_mass_calc()
-            if self.ME4 is not None:
-                md_mission_result = md_mission_result + self.ME4.dry_mass_calc()
+        if self.ME2 is not None:
+            md_mission_result = md_mission_result + self.ME2.dry_mass_calc()    
+            if self.ME3 is not None:
+                md_mission_result = md_mission_result + self.ME3.dry_mass_calc()
+                if self.ME4 is not None:
+                    md_mission_result = md_mission_result + self.ME4.dry_mass_calc()
         
         return int(md_mission_result)
     
     
     def mprop_mission_calc(self):
         #assuming always having at least a TV and a probe or lander
-        mprop_mission_result = self.ME1.mprop_calc() + self.ME2.mprop_calc() 
+        mprop_mission_result = self.ME1.mprop_calc()
         #additional vehicles
-        if self.ME3 is not None:
-            mprop_mission_result = mprop_mission_result + self.ME3.mprop_calc()
-            if self.ME4 is not None:
-                mprop_mission_result = mprop_mission_result + self.ME4.mprop_calc()        
+        if self.ME2 is not None:
+            mprop_mission_result = mprop_mission_result + self.ME2.mprop_calc()
+            if self.ME3 is not None:
+                mprop_mission_result = mprop_mission_result + self.ME3.mprop_calc()
+                if self.ME4 is not None:
+                    mprop_mission_result = mprop_mission_result + self.ME4.mprop_calc()        
         
         return int(mprop_mission_result)
     
     
     def mt_imLEO_calc(self):
         #assuming always having at least a TV and a probe or lander
-        mt_imLEO_result = self.ME1.mtotal_calc() + self.ME2.mtotal_calc() 
+        mt_imLEO_result = self.ME1.mtotal_calc()
         #additional vehicles
-        if self.ME3 is not None:
-            mt_imLEO_result = mt_imLEO_result + self.ME3.mtotal_calc()
-            if self.ME4 is not None:
-                mt_imLEO_result = mt_imLEO_result + self.ME4.mtotal_calc()        
+        if self.ME2 is not None:
+            mt_imLEO_result = mt_imLEO_result + self.ME2.mtotal_calc()
+            if self.ME3 is not None:
+                mt_imLEO_result = mt_imLEO_result + self.ME3.mtotal_calc()
+                if self.ME4 is not None:
+                    mt_imLEO_result = mt_imLEO_result + self.ME4.mtotal_calc()        
         
         return int(mt_imLEO_result)
     
@@ -145,7 +174,6 @@ class MA():
 def link(d, R, Gt, Pt, f):
     # gain of reciever --> dia of dish --> cost of ground station equipment + lease / building purcahse
     EbNo = 12.6 #dB
-    Gt = 12 #dB
     T = 135 #K
    
     lam = 299792458/f #in meters
@@ -179,7 +207,7 @@ def AMCM(MA):
     Q = 1 #quantity 
     M = a*2.2 #dry mass in pounds
     IOC = 2024 #initial year of operation
-    Bl = 1 #iteration of the design
+    Bl = 2 #iteration of the design
     Di = 0
     
     
@@ -188,12 +216,12 @@ def AMCM(MA):
     ### dedicated GroundSegment ###
     d = 385000000 # should be a param of MA in the destination object
     R = 10e6 # should be a param of MA in the data object
-    Gt = 12 #dB typical
+    Gt = 24 #dB typical (high)
     Pt = 300 #W
     f = 3e9 #s-band
     
     D = link(d, R, Gt, Pt, f)
-    GS_equip = 650*D + 350*20 + 1550 #SMAD pg 730 FY92in self 
+    GS_equip = (650*D + 350*20 + 1550)/1000 #SMAD pg 730 FY92 in M€
     GS_equip = GS_equip*1.84 # FY2020
     GS_FAC = (18/81)*GS_equip # from table 20.3 in SMAD sized FAC from equip
     
@@ -201,7 +229,13 @@ def AMCM(MA):
     
     ### wrap up ###
     
+    # print("acquisition (M$)", int(AD_C))
+    # print("ground station (M$)", int(GS_C))
+    # print("ground station dish diameter (m)", int(D))
+    # print("ground station equipment (M$)", int(GS_equip))
+    # print("ground station facility (M$)", int(GS_FAC))
     C = AD_C+GS_C
+    
     
     return int(C) #returns k$
     
@@ -215,13 +249,41 @@ def Launchcosts(MA):
     
     SLC = Launcher.slc() #specific launch cost
     # print(SLC, c)
-    return SLC*c
+    # return SLC*c
+    return Launcher.cost
+
+#%% TP derived Cost function
+def TP(MA):
+    a = MA.ME1.dmb()
+    str_c = c.structure(a["Str"])
+    prpl_c = c.motor((a["Propulsion"])*(77/313))+c.tanks((a["Propulsion"])*(236/313))
+    power_c = c.power(a["Power"])
+    avio_c = c.avionics(a["Avionics"])
+    therm_c = c.thermal(a["Thermal"])
+    ADCS_c = c.other(a["Other"])
+    
+    acq_cost = str_c + prpl_c + power_c + avio_c + therm_c + ADCS_c
+    acq_cost = acq_cost/0.69 # the system integration factor present in TP
+    
+    # ME2 estimation
+    
+    return acq_cost
 
 #%%
+def TP2(MA):
+    a = MA.ME2.dry_mass_calc()
+    prpl_c = c.motor((a)*(77/313))+c.tanks((a)*(236/313))
+    return prpl_c
+# %%
+# i = 4250
+# # MA_dict(MAs[i], i)
 
-
-#%% Cost
-#ddte and launch costs
+# TP(MAs[i])
+#%%
+# i = 152
+# Ma_test = MAs[i]
+# #%% Cost
+# # ddte and launch costs
 # ddte = AMCM(Ma_test)
 # launch = Launchcosts(Ma_test)
 # Aq_cost = ddte + launch
